@@ -49,5 +49,5 @@ router.put('/approve/:id', authenticateOwner, approveStudent);
 router.put('/profile', authenticateOwner, upload.single('profilePhoto'), updateProfile);
 
 
-router.post('/institutions', getInstitutionsForDropdown)
+router.get('/institutions', getInstitutionsForDropdown)
 export default router;

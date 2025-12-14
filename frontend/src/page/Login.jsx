@@ -49,12 +49,15 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(data[formData.role])); 
       localStorage.setItem('role', formData.role);
 
-      if (formData.role === 'owner' || formData.role === 'admin') {
+      // UPDATED REDIRECT LOGIC
+      if (formData.role === 'owner') {
+        navigate('/owner-dashboard'); // Redirect to Owner Dashboard
+      } else if (formData.role === 'admin') {
         navigate('/admin-dashboard');
       } else if (formData.role === 'teacher') {
         navigate('/admin-dashboard'); 
       } else {
-        navigate('/student-dashboard'); // UPDATED: Redirects student to student dashboard
+        navigate('/student-dashboard'); 
       }
 
     } catch (err) {
@@ -67,8 +70,9 @@ const Login = () => {
       setLoading(false);
     }
   };
+
   return (
-<div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <div className="bg-indigo-600 p-2 rounded-lg">
@@ -191,7 +195,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Login

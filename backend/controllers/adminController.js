@@ -104,3 +104,26 @@ export const loginAdmin = async (req, res) => {
         res.status(500).json({ msg: 'Server error' });
     }
 };
+
+// Get all admins for the owner's institution
+export const getAdmins = async (req, res) => {
+    try {
+        const ownerId = req.user.id;
+        
+        // Verify it's an owner
+        const owner = await Owner.findById(ownerId);
+        if (!owner) {
+            return res.status(403).json({ msg: 'Access denied. Only Owners can view admins.' });
+        }
+
+        // Find all admins linked to this institution
+        const admins = await Admin.find({ institutionId: owner.institutionId })
+            .select('-password') // Exclude passwords
+            .sort({ createdAt: -1 });
+
+        res.json(admins);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

@@ -130,3 +130,38 @@ export const loginTeacher = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @desc    Get All Teachers (For Admin/Owner Dashboard)
+// @route   GET /api/teachers
+// @access  Private (Owner or Admin)
+export const getTeachers = async (req, res) => {
+    try {
+        const requesterId = req.user.id;
+        
+        let institutionId = null;
+        
+        // Check if requester is Admin
+        const admin = await Admin.findById(requesterId);
+        if (admin) {
+            institutionId = admin.institutionId;
+        } else {
+            // Check if requester is Owner
+            const owner = await Owner.findById(requesterId);
+            if (owner) {
+                institutionId = owner.institutionId;
+            }
+        }
+
+        if (!institutionId) {
+            return res.status(403).json({ msg: 'Access denied.' });
+        }
+
+        // Fetch teachers for this institution, excluding passwords
+        const teachers = await Teacher.find({ institutionId }).select('-password').sort({ createdAt: -1 });
+        res.json(teachers);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
