@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { authenticateOwner } from '../middlewares/authenticationMiddleware.js';
-import { createBatch, getStudentsByClass, updateBatch } from '../controllers/batchControllers.js';
+import { createBatch, getAllBatches, getStudentsByClass, updateBatch } from '../controllers/batchControllers.js';
 
 
 const router = express.Router();
@@ -15,5 +15,7 @@ router.get('/students', authenticateOwner, getStudentsByClass);
 router.post('/', authenticateOwner, createBatch);
 // 3. Update Batch (Rename / Add Students)
 router.put('/:id', authenticateOwner, updateBatch);
+// 4. Get All Batches (For Dashboard List)
+router.get('/', authenticateOwner, getAllBatches);
 
 export default router;

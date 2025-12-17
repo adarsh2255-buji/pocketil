@@ -151,3 +151,25 @@ export const updateBatch = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+// @desc    Get All Batches for Institution
+// @route   GET /api/batches
+// @access  Private (Owner/Admin)
+export const getAllBatches = async (req, res) => {
+    try {
+        const authData = await getInstitutionId(req);
+        if (!authData) {
+            return res.status(403).json({ msg: 'Access denied' });
+        }
+
+        // Fetch batches and populate student details
+        const batches = await Batch.find({ institutionId: authData.institutionId })
+            .populate('students', 'firstName lastName registerNumber')
+            .sort({ createdAt: -1 });
+
+        res.json(batches);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

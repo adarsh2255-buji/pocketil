@@ -251,6 +251,44 @@ export const updateProfile = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+// @desc    Get All Approved Students
+// @route   GET /api/students
+// @access  Private (Admin/Owner)
+export const getAllStudents = async (req, res) => {
+    try {
+        const requesterId = req.user.id;
+        let institutionId = null;
+
+        // Check if Admin
+        const admin = await Admin.findById(requesterId);
+        if (admin) {
+            institutionId = admin.institutionId;
+        } else {
+            // Check if Owner
+            const owner = await Owner.findById(requesterId);
+            if (owner) {
+                institutionId = owner.institutionId;
+            }
+        }
+
+        if (!institutionId) {
+            return res.status(403).json({ msg: 'Access denied. Authorized personnel only.' });
+        }
+
+        const students = await Student.find({ 
+            institutionId, 
+            isApproved: true 
+        })
+        .select('-password')
+        .sort({ firstName: 1 });
+
+        res.json(students);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
 
 // @desc    Get all institutions (For the dropdown list)
 // @route   GET /api/students/institutions
