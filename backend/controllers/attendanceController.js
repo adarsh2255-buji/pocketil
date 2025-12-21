@@ -196,9 +196,16 @@ export const viewAttendance = async (req, res) => {
         const query = { institutionId: userAuth.institutionId };
         
         if (batchId) query.batchId = batchId;
-        if (date) query.date = new Date(date); // Ensure date format matches YYYY-MM-DD sent from front
+        
+        // Handle Date Query to ignore time components
+        if (date) {
+            const searchDate = new Date(date);
+            const startOfDay = new Date(searchDate.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(searchDate.setHours(23, 59, 59, 999));
+            
+            query.date = { $gte: startOfDay, $lte: endOfDay };
+        }
 
-        // Sort by date descending (newest first)
         const attendanceRecords = await Attendance.find(query)
             .populate('batchId', 'name className')
             .sort({ date: -1 });

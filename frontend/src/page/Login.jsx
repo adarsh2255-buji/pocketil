@@ -49,13 +49,10 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(data[formData.role])); 
       localStorage.setItem('role', formData.role);
 
-      // UPDATED REDIRECT LOGIC
-      if (formData.role === 'owner') {
-        navigate('/owner-dashboard'); // Redirect to Owner Dashboard
-      } else if (formData.role === 'admin') {
+      if (formData.role === 'owner' || formData.role === 'admin') {
         navigate('/admin-dashboard');
       } else if (formData.role === 'teacher') {
-        navigate('/admin-dashboard'); 
+        navigate('/teacher-dashboard'); // UPDATED REDIRECT
       } else {
         navigate('/student-dashboard'); 
       }
@@ -197,5 +194,4 @@ const Login = () => {
     </div>
   );
 };
-
 export default Login
