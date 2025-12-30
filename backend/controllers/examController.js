@@ -19,13 +19,11 @@ const identifyUser = async (userId) => {
 
 // @desc    Create Exam (Blueprint)
 // @route   POST /api/exams
-// @access  Private (Teacher/Admin/Owner)
 export const createExam = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ msg: 'Unauthorized' });
 
         const { batchId, name, scheduledDate, duration, subjects } = req.body;
-        // subjects format: [{ name: "Math", maxMarks: 100, passMarks: 40 }, ...]
 
         const userAuth = await identifyUser(req.user.id);
         if (!userAuth) return res.status(403).json({ msg: 'Access denied' });
@@ -50,9 +48,30 @@ export const createExam = async (req, res) => {
     }
 };
 
+// @desc    Get All Exams for Institution (NEW)
+// @route   GET /api/exams
+export const getExams = async (req, res) => {
+    try {
+        if (!req.user) return res.status(401).json({ msg: 'Unauthorized' });
+
+        const userAuth = await identifyUser(req.user.id);
+        if (!userAuth) return res.status(403).json({ msg: 'Access denied' });
+
+        // Fetch exams and populate batch name
+        const exams = await Exam.find({ institutionId: userAuth.institutionId })
+            .populate('batchId', 'name className')
+            .sort({ scheduledDate: -1 });
+
+        res.json(exams);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
 // @desc    Get Exam & Students (For Grading Sheet UI)
 // @route   GET /api/exams/:examId/grading-sheet
-// @access  Private
 export const getExamForGrading = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ msg: 'Unauthorized' });
@@ -62,16 +81,14 @@ export const getExamForGrading = async (req, res) => {
         
         if (!exam) return res.status(404).json({ msg: 'Exam not found' });
 
-        // Fetch students in the batch
         const batch = await Batch.findById(exam.batchId).populate('students', 'firstName lastName registerNumber');
 
-        // Check if marks already exist for this exam to pre-fill the UI
         const existingResults = await ExamResult.find({ examId });
 
         res.json({
             examDetails: exam,
             students: batch.students,
-            existingResults // If empty, UI shows empty inputs. If data exists, UI shows filled inputs (edit mode).
+            existingResults 
         });
 
     } catch (err) {
@@ -82,21 +99,11 @@ export const getExamForGrading = async (req, res) => {
 
 // @desc    Submit Marks (Bulk)
 // @route   POST /api/exams/marks
-// @access  Private
 export const submitExamMarks = async (req, res) => {
     try {
         if (!req.user) return res.status(401).json({ msg: 'Unauthorized' });
 
         const { examId, studentMarks } = req.body;
-        // studentMarks: Array of objects
-        // [
-        //   { 
-        //     studentId: "...", 
-        //     isAbsent: false, 
-        //     obtainedMarks: { "Math": 80, "Science": 90 } 
-        //   },
-        //   { studentId: "...", isAbsent: true }
-        // ]
 
         const userAuth = await identifyUser(req.user.id);
         if (!userAuth) return res.status(403).json({ msg: 'Access denied' });
@@ -112,17 +119,13 @@ export const submitExamMarks = async (req, res) => {
             let finalStatus = 'Passed';
             let processedSubjectResults = [];
 
-            // Calculate results based on Exam blueprint
             exam.subjects.forEach(sub => {
                 totalMax += sub.maxMarks;
-                
-                // If absent, marks are 0
                 const marksGot = isAbsent ? 0 : (obtainedMarks[sub.name] || 0);
                 totalObtained += Number(marksGot);
 
-                // Determine subject-wise pass/fail
                 const isSubjectPass = marksGot >= sub.passMarks;
-                if (!isSubjectPass && !isAbsent) finalStatus = 'Failed'; // Fail if any subject is failed
+                if (!isSubjectPass && !isAbsent) finalStatus = 'Failed';
 
                 processedSubjectResults.push({
                     subjectName: sub.name,
@@ -134,9 +137,8 @@ export const submitExamMarks = async (req, res) => {
 
             if (isAbsent) finalStatus = 'Absent';
 
-            const percentage = (totalObtained / totalMax) * 100;
+            const percentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
 
-            // Prepare the operation for bulkWrite (Upsert: Update if exists, Insert if new)
             return {
                 updateOne: {
                     filter: { examId: exam._id, studentId: studentId },
@@ -157,7 +159,6 @@ export const submitExamMarks = async (req, res) => {
             };
         });
 
-        // Execute all database operations in one go
         await ExamResult.bulkWrite(bulkOperations);
 
         res.json({ success: true, msg: 'Marks submitted successfully' });
