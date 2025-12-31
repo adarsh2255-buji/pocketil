@@ -186,23 +186,36 @@ export const payFees = async (req, res) => {
     }
 };
 
-// @desc    4. Admin Dashboard Stats
-// @route   GET /api/fees/admin/stats?batchId=...
+// @desc    4. Admin Dashboard Stats (UPDATED)
+// @route   GET /api/fees/admin/stats?batchId=... (Optional batchId)
 // @access  Private (Admin/Owner)
 export const getAdminFeeStats = async (req, res) => {
     try {
         const { batchId } = req.query;
-        if (!batchId) return res.status(400).json({ msg: 'Batch ID required' });
+        const userAuth = await identifyUser(req.user.id);
+        
+        if (!userAuth || (userAuth.role !== 'admin' && userAuth.role !== 'owner')) {
+            return res.status(403).json({ msg: 'Access Denied' });
+        }
 
-        const fees = await StudentFee.find({ batchId }).populate('studentId', 'firstName lastName registerNumber');
+        // Build query: If batchId exists, use it. Else, fetch ALL for institution.
+        const query = { institutionId: userAuth.institutionId };
+        if (batchId) {
+            query.batchId = batchId;
+        }
+
+        const fees = await StudentFee.find(query).populate('studentId', 'firstName lastName registerNumber');
 
         const totalExpected = fees.reduce((acc, curr) => acc + curr.totalFee, 0);
         const totalCollected = fees.reduce((acc, curr) => acc + curr.paidFee, 0);
         const totalPending = fees.reduce((acc, curr) => acc + curr.remainingFee, 0);
+        
+        // Count unique students who have paid at least something
+        const studentsPaidCount = fees.filter(f => f.paidFee > 0).length;
 
         const unpaidStudents = fees.filter(f => f.remainingFee > 0).map(f => ({
-            name: `${f.studentId.firstName} ${f.studentId.lastName}`,
-            registerNumber: f.studentId.registerNumber,
+            name: `${f.studentId?.firstName} ${f.studentId?.lastName}`,
+            registerNumber: f.studentId?.registerNumber,
             pendingAmount: f.remainingFee,
             pendingMonths: f.monthlyStatus.filter(m => m.status === 'Due').map(m => m.month)
         }));
@@ -211,6 +224,7 @@ export const getAdminFeeStats = async (req, res) => {
             totalExpected,
             totalCollected,
             totalPending,
+            studentsPaidCount,
             unpaidStudents
         });
 

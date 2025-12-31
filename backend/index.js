@@ -15,6 +15,7 @@ import batchRoutes from './routes/batchRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import examRoutes from './routes/examRoutes.js';
 import feeRoutes from './routes/feeRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
@@ -45,6 +46,7 @@ app.use('/api/batches', batchRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/fees', feeRoutes);
+app.use('/api/expenses', expenseRoutes);
 //profile upload
 app.use('/uploads', express.static('uploads'));
 
