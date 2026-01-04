@@ -49,10 +49,13 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(data[formData.role])); 
       localStorage.setItem('role', formData.role);
 
-      if (formData.role === 'owner' || formData.role === 'admin') {
+      // --- FIXED NAVIGATION LOGIC ---
+      if (formData.role === 'owner') {
+        navigate('/owner-dashboard');
+      } else if (formData.role === 'admin') {
         navigate('/admin-dashboard');
       } else if (formData.role === 'teacher') {
-        navigate('/teacher-dashboard'); // UPDATED REDIRECT
+        navigate('/teacher-dashboard'); 
       } else {
         navigate('/student-dashboard'); 
       }

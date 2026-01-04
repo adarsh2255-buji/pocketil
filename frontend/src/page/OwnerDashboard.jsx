@@ -21,7 +21,9 @@ const OwnerDashboard = () => {
     if (!token || !userData || role !== 'owner') { navigate('/login'); } else { setUser(JSON.parse(userData)); }
   }, [navigate]);
 
-  useEffect(() => { if (activeView === 'dashboard') fetchAdmins(); }, [activeView]);
+  useEffect(() => { 
+    if (activeView === 'dashboard' || activeView === 'create-admin') fetchAdmins(); 
+  }, [activeView]);
 
   const fetchAdmins = async () => { try { const response = await api.get('/admins'); setAdmins(response.data); } catch (err) { console.error("Failed to fetch admins", err); } };
   
@@ -67,6 +69,9 @@ const OwnerDashboard = () => {
                    </form>
                  </div>
                </div>
+               
+               {/* List of Admins also shown in Manage Admins tab for better UX */}
+               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"><div className="p-6 border-b border-gray-100 flex justify-between items-center"><h2 className="text-lg font-bold text-gray-900">Current Admins</h2></div><div className="overflow-x-auto"><table className="w-full text-left"><thead className="bg-gray-50 text-gray-600 text-xs uppercase font-semibold"><tr><th className="px-6 py-4">Name</th><th className="px-6 py-4">Email</th><th className="px-6 py-4">Created On</th></tr></thead><tbody className="divide-y divide-gray-100">{admins.length === 0 ? (<tr><td colSpan="3" className="px-6 py-4 text-center text-gray-500">No admins found.</td></tr>) : (admins.map((admin) => (<tr key={admin._id} className="hover:bg-gray-50 transition-colors"><td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-2"><div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs">{admin.name.charAt(0)}</div>{admin.name}</td><td className="px-6 py-4 text-gray-600">{admin.email}</td><td className="px-6 py-4 text-gray-500 text-sm">{new Date(admin.createdAt).toLocaleDateString()}</td></tr>)))}</tbody></table></div></div>
              </div>
            )}
            {activeView === 'attendance' && <AttendanceManager />}
