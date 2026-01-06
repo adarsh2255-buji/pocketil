@@ -168,3 +168,21 @@ export const submitExamMarks = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+// NEW: Get Student's Own Results
+// @route GET /api/exams/my-results
+export const getStudentExamResults = async (req, res) => {
+    try {
+        if (!req.user || req.user.role !== 'student') {
+             return res.status(401).json({ msg: 'Unauthorized' });
+        }
+
+        const results = await ExamResult.find({ studentId: req.user.id })
+            .populate('examId', 'name scheduledDate subjects') 
+            .sort({ createdAt: -1 }); // Latest results first
+
+        res.json(results);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

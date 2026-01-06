@@ -1,5 +1,5 @@
 import express from 'express';
-import { createExam, getExamForGrading, submitExamMarks, getExams } from '../controllers/examController.js';
+import { createExam, getExamForGrading, submitExamMarks, getExams, getStudentExamResults } from '../controllers/examController.js';
 import { authenticateOwner } from '../middlewares/authenticationMiddleware.js';
 
 const router = express.Router();
@@ -14,5 +14,6 @@ router.get('/:examId/grading-sheet', authenticateOwner, getExamForGrading);
 router.post('/marks', authenticateOwner, submitExamMarks);
 // 4. Get All Exams 
 router.get('/', authenticateOwner, getExams);
+router.get('/my-results', authenticateOwner, getStudentExamResults);
 
 export default router;
