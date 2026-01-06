@@ -1,5 +1,5 @@
 import express from 'express';
-import { markAttendance, getBatchStudents, updateAttendance, viewAttendance } from '../controllers/attendanceController.js';
+import { markAttendance, getBatchStudents, updateAttendance, viewAttendance, getStudentAttendance } from '../controllers/attendanceController.js';
 import { authenticateOwner } from '../middlewares/authenticationMiddleware.js';
 
 const router = express.Router();
@@ -17,5 +17,7 @@ router.put('/:id', authenticateOwner, updateAttendance);
 // 4. View Attendance History (NEW ROUTE)
 // Maps to GET /api/attendance
 router.get('/', authenticateOwner, viewAttendance);
+// 5. Get My Attendance (Student Only) (NEW)
+router.get('/my-history', authenticateOwner, getStudentAttendance);
 
 export default router;

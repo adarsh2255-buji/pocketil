@@ -1,5 +1,5 @@
 import express from 'express';
-import { approveStudent, getAllStudents, getInstitutionsForDropdown, getPendingStudents, loginStudent, registerStudent, updateProfile } from '../controllers/studentController.js';
+import { approveStudent, getAllStudents, getInstitutionsForDropdown, getPendingStudents, getStudentProfile, loginStudent, registerStudent, updateProfile } from '../controllers/studentController.js';
 import { authenticateOwner } from '../middlewares/authenticationMiddleware.js';
 import multer from 'multer';
 import path from 'path';
@@ -48,6 +48,8 @@ router.put('/approve/:id', authenticateOwner, approveStudent);
 // Uses 'auth' to check login, 'upload' to handle image
 router.put('/profile', authenticateOwner, upload.single('profilePhoto'), updateProfile);
 router.get('/', authenticateOwner, getAllStudents);
+// Get current student profile (Full details)
+router.get('/profile', authenticateOwner, getStudentProfile);
 
 
 router.get('/institutions', getInstitutionsForDropdown)

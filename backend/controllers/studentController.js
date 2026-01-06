@@ -303,3 +303,22 @@ export const getInstitutionsForDropdown = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @desc    Get Current Student Profile (Full Details)
+// @route   GET /api/students/profile
+// @access  Private (Student)
+export const getStudentProfile = async (req, res) => {
+    try {
+        // req.user.id comes from the auth middleware
+        const student = await Student.findById(req.user.id).select('-password');
+        
+        if (!student) {
+            return res.status(404).json({ msg: 'Student not found' });
+        }
+
+        res.json(student);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

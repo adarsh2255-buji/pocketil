@@ -217,3 +217,62 @@ export const viewAttendance = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @desc    Get Logged-in Student's Attendance History & Stats (NEW)
+// @route   GET /api/attendance/my-history
+export const getStudentAttendance = async (req, res) => {
+    try {
+        if (!req.user || req.user.role !== 'student') {
+             return res.status(401).json({ msg: 'Unauthorized' });
+        }
+
+        const studentId = req.user.id;
+
+        // Find attendance records containing this student
+        const records = await Attendance.find({
+            "records.studentId": studentId
+        }).sort({ date: -1 });
+
+        let presentCount = 0;
+        let absentCount = 0;
+        const history = [];
+
+        records.forEach(record => {
+            const studentRecord = record.records.find(r => r.studentId.toString() === studentId);
+            if (studentRecord) {
+                if (studentRecord.status === 'Present') presentCount++;
+                else absentCount++;
+
+                history.push({
+                    _id: record._id,
+                    date: record.date,
+                    session: record.session,
+                    status: studentRecord.status,
+                    startTime: record.startTime,
+                    endTime: record.endTime
+                });
+            }
+        });
+
+        const totalDays = presentCount + absentCount;
+        const percentage = totalDays > 0 ? ((presentCount / totalDays) * 100).toFixed(1) : 0;
+        
+        // Determine last status
+        const lastStatus = history.length > 0 ? history[0].status : 'N/A';
+
+        res.json({
+            stats: {
+                totalDays,
+                presentCount,
+                absentCount,
+                percentage,
+                lastStatus
+            },
+            history
+        });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
