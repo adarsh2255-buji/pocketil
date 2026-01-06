@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, User, CheckCircle2, CreditCard, FileText, School,
-  LogOut, X, Menu, Camera, Edit,Check, BarChart3, Minus, Award, AlertTriangle, ChevronRight, ArrowLeft, Calendar, BookOpenCheck, Bell  } from 'lucide-react';
+  LogOut, X, Menu, Camera, Edit,Check, BarChart3, Minus, Award, AlertTriangle, ChevronRight, ArrowLeft, Calendar, BookOpenCheck, Bell, TrendingUp  } from 'lucide-react';
 import ProfileEditModal from '../components/ProfileEditModel';
 import api from '../utils/api';
 import StudentFeeManager from '../components/StudentFeeManager';
